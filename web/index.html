@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P.R.I.S.M.A Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .defect-true { background-color: #f8d7da !important; color: #842029; font-weight: bold;}
+        .defect-false { background-color: #d1e7dd !important; color: #0f5132; }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="mb-4 text-primary">⚙️ P.R.I.S.M.A. - Suivi de Production (Temps Réel)</h2>
+        
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Date / Heure</th>
+                            <th>Fichier</th>
+                            <th>État</th>
+                            <th>Prédiction (Défaut)</th>
+                            <th>Confiance</th>
+                            <th>Latence (ms)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inferences-table">
+                        <tr><td colspan="6" class="text-center">Chargement des données...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // L'URL de ta fonction HTTP locale (à changer par l'URL Azure plus tard)
+        const FUNCTION_URL = "http://localhost:7071/api/inferences";
+
+        async function fetchInferences() {
+            try {
+                const response = await fetch(FUNCTION_URL);
+                const data = await response.json();
+                
+                const tbody = document.getElementById('inferences-table');
+                tbody.innerHTML = ''; // On vide le tableau
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">Aucune inférence dans la base.</td></tr>';
+                    return;
+                }
+
+                data.forEach(item => {
+                    const dateObj = new Date(item.timestamp);
+                    const isDefect = item.defect_detected;
+                    
+                    const tr = document.createElement('tr');
+                    tr.className = isDefect ? 'defect-true' : 'defect-false';
+                    
+                    tr.innerHTML = `
+                        <td>${dateObj.toLocaleTimeString('fr-FR')}</td>
+                        <td>${item.filename}</td>
+                        <td>${isDefect ? 'Rejeté' : 'Sain'}</td>
+                        <td>${isDefect ? item.prediction : '-'}</td>
+                        <td>${item.confidence ? (item.confidence * 100).toFixed(1) + '%' : '-'}</td>
+                        <td>${item.latency_ms}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error("Erreur lors de la récupération :", error);
+            }
+        }
+
+        // Premier appel immédiat
+        fetchInferences();
+        // Rafraîchissement toutes les 5 secondes (Near Real-Time)
+        setInterval(fetchInferences, 5000);
+    </script>
+</body>
+</html>
