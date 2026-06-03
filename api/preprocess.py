@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
 
 def run_opencv_detection(ref_img_np: np.ndarray, test_img_np: np.ndarray):
     """Effectue la soustraction d'image pour isoler le défaut et renvoie le crop et sa bbox."""

@@ -1,0 +1,14 @@
+.venv
+venv
+__pycache__
+*.pyc
+*.ipynb
+.git
+.env
+# On ignore tout le dossier de données massif de Kaggle...
+data/
+model/data/
+# ... SAUF le sous-dossier contenant les golden samples nécessaires à l'API !
+!model/data/PCB_DATASET/
+!model/data/PCB_DATASET/PCB_USED/
+!model/data/PCB_DATASET/PCB_USED/**
